@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const rating_controller_1 = require("../controllers/rating/rating.controller");
+const auth_1 = require("../middlewares/auth");
+const router = (0, express_1.Router)();
+router.post("/add-rating/:courseId", auth_1.auth, auth_1.student, rating_controller_1.addRatingAndReview);
+router.get("/average-rating/:courseId", rating_controller_1.getAverageRating);
+router.get("/get-rating-by-course/:courseId", rating_controller_1.getAllRatingByCourse);
+exports.default = router;
