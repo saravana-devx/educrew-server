@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -23,9 +14,9 @@ const course_1 = __importDefault(require("../../model/course"));
 const profile_1 = __importDefault(require("../../model/profile"));
 const instructor_1 = __importDefault(require("../../model/instructor"));
 const mongoose_1 = __importDefault(require("mongoose"));
-exports.getProfileDetails = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getProfileDetails = (0, asyncHandler_1.default)(async (req, res) => {
     const id = req.currentUser.id;
-    const userDetails = yield user_1.default.findById(id)
+    const userDetails = await user_1.default.findById(id)
         .select("-password -isVerified  -courses -createdAt -updatedAt")
         .populate("additionalDetails")
         .exec();
@@ -40,8 +31,8 @@ exports.getProfileDetails = (0, asyncHandler_1.default)((req, res) => __awaiter(
         message: constant_1.RESPONSE_MESSAGES.USERS.FOUND,
         data: { userDetails },
     }));
-}));
-exports.updateProfile = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.updateProfile = (0, asyncHandler_1.default)(async (req, res) => {
     if (!req.body && Object.keys(req.body).length === 0 && !req.file) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.BAD_REQUEST,
@@ -52,17 +43,17 @@ exports.updateProfile = (0, asyncHandler_1.default)((req, res) => __awaiter(void
     const user = req.currentUser;
     let imageUrl;
     if (req.file) {
-        const response = yield (0, uploadMediaToCloudinary_1.default)(req.file.path);
+        const response = await (0, uploadMediaToCloudinary_1.default)(req.file.path);
         imageUrl = response.secure_url;
     }
-    const newProfileDetails = yield user_1.default.findByIdAndUpdate(user.id, {
+    const newProfileDetails = await user_1.default.findByIdAndUpdate(user.id, {
         $set: {
             firstName,
             lastName,
             image: imageUrl,
         },
     }, { new: true });
-    yield profile_1.default.findByIdAndUpdate(newProfileDetails === null || newProfileDetails === void 0 ? void 0 : newProfileDetails.additionalDetails, {
+    await profile_1.default.findByIdAndUpdate(newProfileDetails?.additionalDetails, {
         $set: {
             gender,
             dob,
@@ -70,7 +61,7 @@ exports.updateProfile = (0, asyncHandler_1.default)((req, res) => __awaiter(void
             contactNumber,
         },
     }, { new: true });
-    const updatedProfile = yield user_1.default.findById(user.id)
+    const updatedProfile = await user_1.default.findById(user.id)
         .select("-password -isVerified -approve  -courseProgress  -createdAt -updatedAt") // Exclude the password field
         .populate("additionalDetails")
         .exec();
@@ -79,10 +70,10 @@ exports.updateProfile = (0, asyncHandler_1.default)((req, res) => __awaiter(void
         message: constant_1.RESPONSE_MESSAGES.USERS.UPDATED,
         data: { updatedProfile },
     }));
-}));
-exports.deleteAccount = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.deleteAccount = (0, asyncHandler_1.default)(async (req, res) => {
     const { id } = req.currentUser;
-    const deletedAccount = yield user_1.default.findByIdAndDelete(id);
+    const deletedAccount = await user_1.default.findByIdAndDelete(id);
     if (!deletedAccount) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.CONFLICT,
@@ -94,25 +85,25 @@ exports.deleteAccount = (0, asyncHandler_1.default)((req, res) => __awaiter(void
         message: constant_1.RESPONSE_MESSAGES.USERS.DELETED,
         data: { deletedAccount },
     }));
-}));
-exports.deleteAccountByAdmin = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.deleteAccountByAdmin = (0, asyncHandler_1.default)(async (req, res) => {
     const { userId } = req.params;
-    const user = yield user_1.default.findById(userId);
+    const user = await user_1.default.findById(userId);
     if (!user) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
             message: "User not found",
         });
     }
-    const deleteUser = yield user_1.default.deleteOne({ _id: userId });
+    const deleteUser = await user_1.default.deleteOne({ _id: userId });
     res.status(constant_1.HTTP_STATUS.OK).json(new apiResponse_1.ApiResponse({
         status: constant_1.HTTP_STATUS.OK,
         message: "User Account Deleted Successfully",
     }));
-}));
-exports.getInstructorDashboard = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.getInstructorDashboard = (0, asyncHandler_1.default)(async (req, res) => {
     const instructorId = req.currentUser.id;
-    const instructor = yield instructor_1.default.findById(instructorId);
+    const instructor = await instructor_1.default.findById(instructorId);
     if (!instructor) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.BAD_REQUEST,
@@ -151,7 +142,7 @@ exports.getInstructorDashboard = (0, asyncHandler_1.default)((req, res) => __awa
             $unset: "ratings",
         },
     ];
-    const courseData = yield course_1.default.aggregate(pipeline);
+    const courseData = await course_1.default.aggregate(pipeline);
     if (!courseData) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
@@ -166,10 +157,10 @@ exports.getInstructorDashboard = (0, asyncHandler_1.default)((req, res) => __awa
             totalEarnings: instructor.earnings,
         },
     }));
-}));
-exports.getEarningByMonth = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.getEarningByMonth = (0, asyncHandler_1.default)(async (req, res) => {
     const instructorId = req.currentUser.id;
-    const earningsByMonth = yield course_1.default.aggregate([
+    const earningsByMonth = await course_1.default.aggregate([
         {
             $match: {
                 $and: [
@@ -211,10 +202,10 @@ exports.getEarningByMonth = (0, asyncHandler_1.default)((req, res) => __awaiter(
         message: constant_1.RESPONSE_MESSAGES.USERS.EARNING_BY_MONTH,
         data: earningsByMonth,
     }));
-}));
-exports.getEarningByCourses = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.getEarningByCourses = (0, asyncHandler_1.default)(async (req, res) => {
     const instructorId = req.currentUser.id;
-    const earningsByCourse = yield course_1.default.aggregate([
+    const earningsByCourse = await course_1.default.aggregate([
         {
             $match: {
                 $and: [
@@ -247,8 +238,8 @@ exports.getEarningByCourses = (0, asyncHandler_1.default)((req, res) => __awaite
         message: constant_1.RESPONSE_MESSAGES.USERS.EARNING_BY_COURSE,
         data: earningsByCourse,
     }));
-}));
-exports.getCoursesInfoForAdmin = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.getCoursesInfoForAdmin = (0, asyncHandler_1.default)(async (req, res) => {
     const pipeline = [
         {
             $lookup: {
@@ -296,14 +287,14 @@ exports.getCoursesInfoForAdmin = (0, asyncHandler_1.default)((req, res) => __awa
             $unset: "ratings",
         },
     ];
-    const courses = yield course_1.default.aggregate(pipeline);
+    const courses = await course_1.default.aggregate(pipeline);
     res.status(constant_1.HTTP_STATUS.OK).json(new apiResponse_1.ApiResponse({
         status: constant_1.HTTP_STATUS.OK,
         message: constant_1.RESPONSE_MESSAGES.USERS.ADMIN_DASHBOARD_COURSE_DETAILS,
         data: { courses },
     }));
-}));
-exports.getUsersInfoForAdmin = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.getUsersInfoForAdmin = (0, asyncHandler_1.default)(async (req, res) => {
     const pipeline = [
         {
             $project: {
@@ -316,15 +307,15 @@ exports.getUsersInfoForAdmin = (0, asyncHandler_1.default)((req, res) => __await
             },
         },
     ];
-    const users = yield user_1.default.aggregate(pipeline);
+    const users = await user_1.default.aggregate(pipeline);
     res.status(constant_1.HTTP_STATUS.OK).json(new apiResponse_1.ApiResponse({
         status: constant_1.HTTP_STATUS.OK,
         message: constant_1.RESPONSE_MESSAGES.USERS.ADMIN_DASHBOARD_USER_DETAILS,
         data: { users },
     }));
-}));
-exports.getTotalStudentAndInstructor = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const users = yield user_1.default.aggregate([
+});
+exports.getTotalStudentAndInstructor = (0, asyncHandler_1.default)(async (req, res) => {
+    const users = await user_1.default.aggregate([
         {
             $match: {
                 accountType: {
@@ -346,9 +337,9 @@ exports.getTotalStudentAndInstructor = (0, asyncHandler_1.default)((req, res) =>
         message: "Total no of Student and Instructor.",
         data: users,
     }));
-}));
-exports.getMostEnrolledCourses = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const courses = yield course_1.default.aggregate([
+});
+exports.getMostEnrolledCourses = (0, asyncHandler_1.default)(async (req, res) => {
+    const courses = await course_1.default.aggregate([
         {
             $project: {
                 courseName: 1,
@@ -376,4 +367,4 @@ exports.getMostEnrolledCourses = (0, asyncHandler_1.default)((req, res) => __awa
         message: "Most enrolled courses by student.",
         data: courses,
     }));
-}));
+});

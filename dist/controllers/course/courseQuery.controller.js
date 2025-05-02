@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -18,9 +9,9 @@ const apiError_1 = require("../../utils/apiResponseHandler/apiError");
 const apiResponse_1 = require("../../utils/apiResponseHandler/apiResponse");
 const constant_1 = require("../../utils/constant");
 const course_1 = __importDefault(require("../../model/course"));
-exports.getCourseByCategory = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getCourseByCategory = (0, asyncHandler_1.default)(async (req, res) => {
     const { category } = req.params;
-    const courses = yield course_1.default.find({ category }).populate({
+    const courses = await course_1.default.find({ category }).populate({
         path: "instructor",
         model: "User",
         select: "firstName lastName image",
@@ -37,8 +28,8 @@ exports.getCourseByCategory = (0, asyncHandler_1.default)((req, res) => __awaite
         message: constant_1.RESPONSE_MESSAGES.COURSES.CATEGORY_FOUND,
         data: { courses, totalCourses },
     }));
-}));
-exports.getSearchResults = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.getSearchResults = (0, asyncHandler_1.default)(async (req, res) => {
     const { searchQuery } = req.params;
     if (!searchQuery || typeof searchQuery !== "string") {
         throw new apiError_1.ApiError({
@@ -46,7 +37,7 @@ exports.getSearchResults = (0, asyncHandler_1.default)((req, res) => __awaiter(v
             message: constant_1.RESPONSE_MESSAGES.COURSES.INVALID_SEARCH_QUERY,
         });
     }
-    const searchResults = yield course_1.default.find({
+    const searchResults = await course_1.default.find({
         status: "Published",
         $or: [
             { courseName: { $regex: searchQuery, $options: "i" } },
@@ -68,9 +59,9 @@ exports.getSearchResults = (0, asyncHandler_1.default)((req, res) => __awaiter(v
         message: constant_1.RESPONSE_MESSAGES.COURSES.SEARCH_RESULTS,
         data: { searchResults },
     }));
-}));
-exports.getTopCourses = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const topCourses = yield course_1.default.find()
+});
+exports.getTopCourses = (0, asyncHandler_1.default)(async (req, res) => {
+    const topCourses = await course_1.default.find()
         .populate("instructor")
         .sort({ studentEnrolled: -1 })
         .limit(8);
@@ -85,4 +76,4 @@ exports.getTopCourses = (0, asyncHandler_1.default)((req, res) => __awaiter(void
         message: constant_1.RESPONSE_MESSAGES.COURSES.FOUND,
         data: topCourses,
     }));
-}));
+});

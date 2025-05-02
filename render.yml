@@ -2,7 +2,12 @@ services:
   - type: web
     name: educrew-server
     env: node
-    plan: free
-    buildCommand: npm install --omit=optional && npm run build
-    startCommand: npm start
-    nodeVersion: 20
+    buildCommand: npm install && npm run build  # Use your build command here
+    startCommand: npm start  # Use your start command here
+    plan: free  # You can change this to 'starter' or 'professional' depending on your plan
+    branch: main  # This is the branch from your repository to deploy
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: '3000'

@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -20,7 +11,7 @@ const section_1 = __importDefault(require("../../../model/section"));
 const uploadMediaToCloudinary_1 = __importDefault(require("../../../utils/cloudinary/uploadMediaToCloudinary"));
 const subSection_1 = __importDefault(require("../../../model/subSection"));
 const apiResponse_1 = require("../../../utils/apiResponseHandler/apiResponse");
-exports.addSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.addSubSection = (0, asyncHandler_1.default)(async (req, res) => {
     const { sectionId } = req.params;
     const { title, description } = req.body;
     if (!title || !description) {
@@ -35,7 +26,7 @@ exports.addSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(void
             message: constant_1.RESPONSE_MESSAGES.COMMON.VIDEO_NOT_FOUND,
         });
     }
-    const section = yield section_1.default.findById(sectionId);
+    const section = await section_1.default.findById(sectionId);
     if (!section) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
@@ -43,15 +34,15 @@ exports.addSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(void
         });
     }
     //extract video url as response from cloudinary
-    const response = yield (0, uploadMediaToCloudinary_1.default)(req.file.path);
-    const subSection = yield subSection_1.default.create({
+    const response = await (0, uploadMediaToCloudinary_1.default)(req.file.path);
+    const subSection = await subSection_1.default.create({
         title,
         timeDuration: response.duration,
         description,
         video: response.secure_url,
     });
     //add subSection ID to section by sectionId
-    const updatedSection = yield section_1.default.findByIdAndUpdate(sectionId, {
+    const updatedSection = await section_1.default.findByIdAndUpdate(sectionId, {
         $push: { subSection: subSection._id },
     }, { new: true });
     res.status(constant_1.HTTP_STATUS.OK).json(new apiResponse_1.ApiResponse({
@@ -59,8 +50,8 @@ exports.addSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(void
         message: constant_1.RESPONSE_MESSAGES.SUBSECTIONS.CREATED,
         data: { updatedSection, subSection },
     }));
-}));
-exports.updateSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.updateSubSection = (0, asyncHandler_1.default)(async (req, res) => {
     const { sectionId, subSectionId } = req.params;
     const { title, description } = req.body;
     if (!sectionId || !subSectionId) {
@@ -69,7 +60,7 @@ exports.updateSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(v
             message: constant_1.RESPONSE_MESSAGES.COMMON.REQUIRED_FIELDS,
         });
     }
-    const subSection = yield subSection_1.default.findById(subSectionId);
+    const subSection = await subSection_1.default.findById(subSectionId);
     if (!subSection) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
@@ -78,9 +69,9 @@ exports.updateSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(v
     }
     let response = {};
     if (req.file) {
-        response = yield (0, uploadMediaToCloudinary_1.default)(req.file.path);
+        response = await (0, uploadMediaToCloudinary_1.default)(req.file.path);
     }
-    const updatedSubSection = yield subSection_1.default.findByIdAndUpdate(subSectionId, {
+    const updatedSubSection = await subSection_1.default.findByIdAndUpdate(subSectionId, {
         title,
         description,
         video: response.secure_url,
@@ -91,8 +82,8 @@ exports.updateSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(v
         message: constant_1.RESPONSE_MESSAGES.SUBSECTIONS.UPDATED,
         data: { updatedSubSection },
     }));
-}));
-exports.deleteSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.deleteSubSection = (0, asyncHandler_1.default)(async (req, res) => {
     const { sectionId, subSectionId } = req.params;
     if (!sectionId || !subSectionId) {
         throw new apiError_1.ApiError({
@@ -100,7 +91,7 @@ exports.deleteSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(v
             message: constant_1.RESPONSE_MESSAGES.COMMON.REQUIRED_FIELDS,
         });
     }
-    const section = yield section_1.default.findById(sectionId);
+    const section = await section_1.default.findById(sectionId);
     if (!section) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
@@ -108,11 +99,11 @@ exports.deleteSubSection = (0, asyncHandler_1.default)((req, res) => __awaiter(v
         });
     }
     //remove subSection id from section-> subSection array
-    yield section_1.default.updateOne({ _id: sectionId }, { $pull: { subSection: subSectionId } });
-    const deletedSubSection = yield subSection_1.default.findByIdAndDelete(subSectionId);
+    await section_1.default.updateOne({ _id: sectionId }, { $pull: { subSection: subSectionId } });
+    const deletedSubSection = await subSection_1.default.findByIdAndDelete(subSectionId);
     res.status(constant_1.HTTP_STATUS.OK).json(new apiResponse_1.ApiResponse({
         status: constant_1.HTTP_STATUS.OK,
         message: constant_1.RESPONSE_MESSAGES.SUBSECTIONS.DELETED,
         data: { deletedSubSection },
     }));
-}));
+});
