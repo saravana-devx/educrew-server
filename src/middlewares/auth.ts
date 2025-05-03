@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 
 import User from "../model/user";
 import jwt from "jsonwebtoken";
+import { IUser } from "../interfaces/interface";
 
 dotenv.config();
 
@@ -28,7 +29,7 @@ export const auth = asyncHandler(
       });
     }
     const secret = process.env.JWT_SECRET as jwt.Secret;
-    const decode = jwt.verify(token, secret);
+    const decode = jwt.verify(token, secret) as IUser;
     req.currentUser = decode;
     next();
   }

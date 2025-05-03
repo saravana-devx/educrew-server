@@ -2,7 +2,7 @@ import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
-
+// import "../types/express"
 import { connectToDatabase } from "./configuration/database";
 
 import errorMiddleware from "./middlewares/errorHandler";
@@ -89,7 +89,7 @@ const PORT = process.env.PORT;
 
 connectToDatabase().then(() => {
   app.listen(PORT, function () {
-    // console.log("Server is running");
-    // console.log(`http://localhost:${PORT}`);
+    console.log("Server is running");
+    console.log(`http://localhost:${PORT}`);
   });
 });
