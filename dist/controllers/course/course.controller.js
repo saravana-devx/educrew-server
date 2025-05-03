@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -16,7 +25,7 @@ const subSection_1 = __importDefault(require("../../model/subSection"));
 const ratingAndReview_1 = __importDefault(require("../../model/ratingAndReview"));
 const student_1 = __importDefault(require("../../model/student"));
 const instructor_1 = __importDefault(require("../../model/instructor"));
-exports.createCourse = (0, asyncHandler_1.default)(async (req, res) => {
+exports.createCourse = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { courseName, description, price, status, category } = req.body;
     let { whatYouWillLearn } = req.body;
     const { id } = req.currentUser;
@@ -39,7 +48,7 @@ exports.createCourse = (0, asyncHandler_1.default)(async (req, res) => {
             message: constant_1.RESPONSE_MESSAGES.COMMON.REQUIRED_FIELDS,
         });
     }
-    const instructor = await instructor_1.default.findById(id);
+    const instructor = yield instructor_1.default.findById(id);
     if (!instructor) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
@@ -62,9 +71,9 @@ exports.createCourse = (0, asyncHandler_1.default)(async (req, res) => {
             message: constant_1.RESPONSE_MESSAGES.COMMON.REQUIRED_FIELDS,
         });
     }
-    const response = await (0, uploadMediaToCloudinary_1.default)(req.file.path);
+    const response = yield (0, uploadMediaToCloudinary_1.default)(req.file.path);
     const thumbnailUrl = response.secure_url;
-    const course = await course_1.default.create({
+    const course = yield course_1.default.create({
         courseName,
         instructor: id,
         description,
@@ -76,18 +85,18 @@ exports.createCourse = (0, asyncHandler_1.default)(async (req, res) => {
         content: [],
     });
     instructor.courses.push(course._id);
-    await instructor.save();
+    yield instructor.save();
     res.status(constant_1.HTTP_STATUS.CREATED).json(new apiResponse_1.ApiResponse({
         status: constant_1.HTTP_STATUS.CREATED,
         message: constant_1.RESPONSE_MESSAGES.COURSES.CREATED,
         data: { course },
     }));
-});
-exports.editCourse = (0, asyncHandler_1.default)(async (req, res) => {
+}));
+exports.editCourse = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { courseId } = req.params;
     const { courseName, description, price, status, category } = req.body;
     const whatYouWillLearn = JSON.parse(req.body.whatYouWillLearn);
-    const course = await course_1.default.findById(courseId);
+    const course = yield course_1.default.findById(courseId);
     if (!course) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
@@ -96,27 +105,24 @@ exports.editCourse = (0, asyncHandler_1.default)(async (req, res) => {
     }
     let thumbnailUrl;
     if (req.file) {
-        const response = await (0, uploadMediaToCloudinary_1.default)(req.file.path);
+        const response = yield (0, uploadMediaToCloudinary_1.default)(req.file.path);
         thumbnailUrl = response.secure_url;
     }
-    const editedCourse = await course_1.default.findByIdAndUpdate(courseId, {
-        courseName,
+    const editedCourse = yield course_1.default.findByIdAndUpdate(courseId, Object.assign({ courseName,
         description,
         price,
         whatYouWillLearn,
         status,
-        category,
-        ...(thumbnailUrl && { thumbnail: thumbnailUrl }), //add new thumbnail url if thumbnail changed
-    }, { new: true });
+        category }, (thumbnailUrl && { thumbnail: thumbnailUrl })), { new: true });
     res.status(constant_1.HTTP_STATUS.OK).json(new apiResponse_1.ApiResponse({
         status: constant_1.HTTP_STATUS.OK,
         message: constant_1.RESPONSE_MESSAGES.COURSES.UPDATED,
         data: { editedCourse },
     }));
-});
-exports.getCourseById = (0, asyncHandler_1.default)(async (req, res) => {
+}));
+exports.getCourseById = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const course = await course_1.default.findById(id)
+    const course = yield course_1.default.findById(id)
         .populate({
         path: "instructor",
         model: "User",
@@ -146,9 +152,9 @@ exports.getCourseById = (0, asyncHandler_1.default)(async (req, res) => {
         message: constant_1.RESPONSE_MESSAGES.COURSES.FOUND,
         data: { course },
     }));
-});
-exports.getAllCourses = (0, asyncHandler_1.default)(async (req, res) => {
-    const courses = await course_1.default.find({ status: "Published" }).populate({
+}));
+exports.getAllCourses = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const courses = yield course_1.default.find({ status: "Published" }).populate({
         path: "instructor",
         model: "User",
         select: "firstName lastName image",
@@ -164,8 +170,8 @@ exports.getAllCourses = (0, asyncHandler_1.default)(async (req, res) => {
         message: constant_1.RESPONSE_MESSAGES.COURSES.FOUND,
         data: { courses },
     }));
-});
-exports.getPagination = (0, asyncHandler_1.default)(async (req, res) => {
+}));
+exports.getPagination = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 6;
     if (isNaN(page) || isNaN(limit)) {
@@ -176,7 +182,7 @@ exports.getPagination = (0, asyncHandler_1.default)(async (req, res) => {
     }
     //To eliminate previous page courses
     const startIndex = (page - 1) * limit;
-    const courses = await course_1.default.find()
+    const courses = yield course_1.default.find()
         .populate({
         path: "instructor",
         model: "User",
@@ -185,7 +191,7 @@ exports.getPagination = (0, asyncHandler_1.default)(async (req, res) => {
         .limit(limit)
         .skip(startIndex)
         .exec();
-    const totalCourses = await course_1.default.countDocuments().exec();
+    const totalCourses = yield course_1.default.countDocuments().exec();
     res.status(constant_1.HTTP_STATUS.OK).json(new apiResponse_1.ApiResponse({
         status: constant_1.HTTP_STATUS.OK,
         message: `Displaying page ${page} with a limit of ${limit} courses per page.`,
@@ -194,10 +200,10 @@ exports.getPagination = (0, asyncHandler_1.default)(async (req, res) => {
             totalCourses,
         },
     }));
-});
-exports.getCourseByUser = (0, asyncHandler_1.default)(async (req, res) => {
+}));
+exports.getCourseByUser = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.currentUser;
-    const user = await student_1.default.findById(id).populate({
+    const user = yield student_1.default.findById(id).populate({
         path: "enrolledCourses",
         model: "Course",
         select: "courseName instructor thumbnail description",
@@ -227,11 +233,11 @@ exports.getCourseByUser = (0, asyncHandler_1.default)(async (req, res) => {
         message: constant_1.RESPONSE_MESSAGES.COURSES.USER_COURSES_FOUND,
         data: { courses },
     }));
-});
-exports.updateCourseStatus = (0, asyncHandler_1.default)(async (req, res) => {
+}));
+exports.updateCourseStatus = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.courseId;
     const newStatus = req.body.status;
-    const course = await course_1.default.findByIdAndUpdate(id, { $set: { status: newStatus } }, { new: true });
+    const course = yield course_1.default.findByIdAndUpdate(id, { $set: { status: newStatus } }, { new: true });
     if (!course) {
         return res.status(constant_1.HTTP_STATUS.NOT_FOUND).json(new apiResponse_1.ApiResponse({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
@@ -243,40 +249,40 @@ exports.updateCourseStatus = (0, asyncHandler_1.default)(async (req, res) => {
         message: constant_1.RESPONSE_MESSAGES.COURSES.COURSE_STATUS_UPDATED,
         data: course,
     }));
-});
-exports.deleteCourseByInstructor = (0, asyncHandler_1.default)(async (req, res) => {
+}));
+exports.deleteCourseByInstructor = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { courseId } = req.params;
-    const course = await course_1.default.findByIdAndDelete(courseId);
+    const course = yield course_1.default.findByIdAndDelete(courseId);
     if (!course) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
             message: constant_1.RESPONSE_MESSAGES.COURSES.NOT_FOUND,
         });
     }
-    await section_1.default.deleteMany({ courseId });
-    await subSection_1.default.deleteMany({ courseId });
-    await ratingAndReview_1.default.deleteMany({ courseId });
-    await user_1.default.updateMany({ courses: courseId }, { $pull: { courses: courseId } });
+    yield section_1.default.deleteMany({ courseId });
+    yield subSection_1.default.deleteMany({ courseId });
+    yield ratingAndReview_1.default.deleteMany({ courseId });
+    yield user_1.default.updateMany({ courses: courseId }, { $pull: { courses: courseId } });
     res.status(constant_1.HTTP_STATUS.OK).json(new apiResponse_1.ApiResponse({
         status: constant_1.HTTP_STATUS.OK,
         message: constant_1.RESPONSE_MESSAGES.COURSES.DELETED,
     }));
-});
-exports.deleteCourseByAdmin = (0, asyncHandler_1.default)(async (req, res) => {
+}));
+exports.deleteCourseByAdmin = (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { courseId } = req.params;
-    const course = await course_1.default.findByIdAndDelete(courseId);
+    const course = yield course_1.default.findByIdAndDelete(courseId);
     if (!course) {
         throw new apiError_1.ApiError({
             status: constant_1.HTTP_STATUS.NOT_FOUND,
             message: constant_1.RESPONSE_MESSAGES.COURSES.NOT_FOUND,
         });
     }
-    await section_1.default.deleteMany({ courseId });
-    await subSection_1.default.deleteMany({ courseId });
-    await ratingAndReview_1.default.deleteMany({ courseId });
-    await user_1.default.updateMany({ courses: courseId }, { $pull: { courses: courseId } });
+    yield section_1.default.deleteMany({ courseId });
+    yield subSection_1.default.deleteMany({ courseId });
+    yield ratingAndReview_1.default.deleteMany({ courseId });
+    yield user_1.default.updateMany({ courses: courseId }, { $pull: { courses: courseId } });
     res.status(constant_1.HTTP_STATUS.OK).json(new apiResponse_1.ApiResponse({
         status: constant_1.HTTP_STATUS.OK,
         message: constant_1.RESPONSE_MESSAGES.COURSES.DELETED,
     }));
-});
+}));

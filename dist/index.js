@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize"));
+// import "../types/express"
 const database_1 = require("./configuration/database");
 const errorHandler_1 = __importDefault(require("./middlewares/errorHandler"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
@@ -67,7 +68,7 @@ app.all("*", (req, res) => {
 const PORT = process.env.PORT;
 (0, database_1.connectToDatabase)().then(() => {
     app.listen(PORT, function () {
-        // console.log("Server is running");
-        // console.log(`http://localhost:${PORT}`);
+        console.log("Server is running");
+        console.log(`http://localhost:${PORT}`);
     });
 });
